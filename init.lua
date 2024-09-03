@@ -462,7 +462,26 @@ require('lazy').setup({
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', opts = {} },
+
+      {
+        'j-hui/fidget.nvim',
+        tag = 'legacy',
+        opts = {
+          align = {
+            bottom = false,
+          },
+          text = {
+            done = '',
+            spinner = 'meter',
+            completed = 'Done!',
+          },
+          window = {
+            blend = 0,
+            relative = 'editor',
+            bottom = false,
+          },
+        },
+      },
 
       -- Allows extra capabilities provided by nvim-cmp
       'hrsh7th/cmp-nvim-lsp',
@@ -608,7 +627,62 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
-        -- rust_analyzer = {},
+        tsserver = {
+          javascript = {
+            inlayHints = {
+              includeInlayEnumMemberValueHints = true,
+              includeInlayFunctionLikeReturnTypeHints = true,
+              includeInlayFunctionParameterTypeHints = true,
+              includeInlayParameterNameHints = 'all',
+              includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+              includeInlayPropertyDeclarationTypeHints = true,
+              includeInlayVariableTypeHints = true,
+            },
+          },
+          typescript = {
+            inlayHints = {
+              includeInlayEnumMemberValueHints = true,
+              includeInlayFunctionLikeReturnTypeHints = true,
+              includeInlayFunctionParameterTypeHints = true,
+              includeInlayParameterNameHints = 'all',
+              includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+              includeInlayPropertyDeclarationTypeHints = true,
+              includeInlayVariableTypeHints = true,
+            },
+          },
+        },
+        rust_analyzer = {
+          ['rust-analyzer'] = {
+            lens = {
+              enable = true,
+              debug = {
+                enable = false,
+              },
+              run = {
+                enable = false,
+              },
+              references = {
+                adt = {
+                  enable = true,
+                },
+                enumVariant = {
+                  enable = true,
+                },
+                method = {
+                  enable = true,
+                },
+              },
+            },
+            -- see toggle inlay hints
+            inlayHints = {
+              closureReturnTypeHints = { enable = true },
+            },
+            -- run cargo clippy instead of cargo check
+            check = {
+              command = 'clippy',
+            },
+          },
+        },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -703,7 +777,9 @@ require('lazy').setup({
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        rust = { 'rustfmt', lsp_format = 'fallback' },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        vue = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
@@ -728,13 +804,14 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
+        opts = { history = true, updateevents = 'TextChanged, TextChangedI' },
       },
       'saadparwaiz1/cmp_luasnip',
 
@@ -743,6 +820,7 @@ require('lazy').setup({
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
+      'onsails/lspkind-nvim',
     },
     config = function()
       -- See `:help cmp`
@@ -751,6 +829,27 @@ require('lazy').setup({
       luasnip.config.setup {}
 
       cmp.setup {
+        preselect = cmp.PreselectMode.None,
+        window = {
+          completion = {
+            winhighlight = 'Normal:Pmenu,FloatBorder:Pmenu,Search:None',
+            col_offset = -3,
+            side_padding = 0,
+          },
+        },
+        formatting = {
+          fields = { 'kind', 'abbr', 'menu' },
+          format = function(entry, vim_item)
+            local kind = require('lspkind').cmp_format {
+              mode = 'symbol_text',
+              maxwidth = 50,
+              symbol_map = { Copilot = '' },
+            }(entry, vim_item)
+            local strings = vim.split(kind.kind, '%s', { trimempty = true })
+            kind.kind = ' ' .. (strings[1] or '') .. ' '
+            return kind
+          end,
+        },
         snippet = {
           expand = function(args)
             luasnip.lsp_expand(args.body)
@@ -787,6 +886,10 @@ require('lazy').setup({
           --  Generally you don't need this, because nvim-cmp will display
           --  completions whenever it has completion options available.
           ['<C-Space>'] = cmp.mapping.complete {},
+          ['<CR>'] = cmp.mapping.confirm {
+            behavior = cmp.ConfirmBehavior.Replace,
+            select = false,
+          },
 
           -- Think of <c-l> as moving to the right of your snippet expansion.
           --  So if you have a snippet that's like:
@@ -811,6 +914,7 @@ require('lazy').setup({
           --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
         },
         sources = {
+          { name = 'copilot' },
           {
             name = 'lazydev',
             -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
@@ -818,26 +922,53 @@ require('lazy').setup({
           },
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
+          { name = 'buffer' },
           { name = 'path' },
+          { name = 'crates' },
         },
       }
     end,
   },
-
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
+  {
+    'rebelot/kanagawa.nvim',
+    opts = {
+      transparent = true,
+      overrides = function(colors)
+        local theme = colors.theme
+        return {
+          NormalFloat = { bg = 'none' },
+          FloatBorder = { bg = 'none' },
+          FloatTitle = { bg = 'none' },
+          NormalDark = { fg = theme.ui.fg_dim, bg = theme.ui.bg_m3 },
+          LazyNormal = { bg = theme.ui.bg_m3, fg = theme.ui.fg_dim },
+          MasonNormal = { bg = theme.ui.bg_m3, fg = theme.ui.fg_dim },
+          TelescopeTitle = { fg = theme.ui.special, bold = true },
+          TelescopePromptNormal = { bg = theme.ui.bg_p1 },
+          TelescopePromptBorder = { fg = theme.ui.bg_p1, bg = theme.ui.bg_p1 },
+          TelescopeResultsNormal = { fg = theme.ui.fg_dim, bg = theme.ui.bg_m1 },
+          TelescopeResultsBorder = { fg = theme.ui.bg_m1, bg = theme.ui.bg_m1 },
+          TelescopePreviewNormal = { bg = theme.ui.bg_dim },
+          TelescopePreviewBorder = { bg = theme.ui.bg_dim, fg = theme.ui.bg_dim },
+          Pmenu = { fg = theme.ui.shade0, bg = theme.ui.bg_p1 }, -- add `blend = vim.o.pumblend` to enable transparency
+          PmenuSel = { fg = 'NONE', bg = theme.ui.bg_p2 },
+          PmenuSbar = { bg = theme.ui.bg_m1 },
+          PmenuThumb = { bg = theme.ui.bg_p2 },
+          -- match with Kanagawa's shell red
+          Error = { fg = '#c34043' },
+        }
+      end,
+      colors = {
+        theme = {
+          all = {
+            ui = {
+              bg_gutter = 'none',
+            },
+          },
+        },
+      },
+    },
     init = function()
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
-
-      -- You can configure highlights by doing something like:
+      vim.cmd.colorscheme 'kanagawa'
       vim.cmd.hi 'Comment gui=none'
     end,
   },
@@ -888,7 +1019,25 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'rust',
+        'javascript',
+        'tsx',
+        'typescript',
+        'vue',
+        'pug',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -899,6 +1048,59 @@ require('lazy').setup({
         additional_vim_regex_highlighting = { 'ruby' },
       },
       indent = { enable = true, disable = { 'ruby' } },
+      incremental_selection = {
+        enable = true,
+        keymaps = {
+          init_selection = '<c-space>',
+          node_incremental = '<c-space>',
+          scope_incremental = '<c-s>',
+          node_decremental = '<M-space>',
+        },
+      },
+      textobjects = {
+        select = {
+          enable = true,
+          lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
+          keymaps = {
+            -- You can use the capture groups defined in textobjects.scm
+            ['aa'] = '@parameter.outer',
+            ['ia'] = '@parameter.inner',
+            ['af'] = '@function.outer',
+            ['if'] = '@function.inner',
+            ['ac'] = '@class.outer',
+            ['ic'] = '@class.inner',
+          },
+        },
+        move = {
+          enable = true,
+          set_jumps = true, -- whether to set jumps in the jumplist
+          goto_next_start = {
+            [']m'] = '@function.outer',
+            [']]'] = '@class.outer',
+          },
+          goto_next_end = {
+            [']M'] = '@function.outer',
+            [']['] = '@class.outer',
+          },
+          goto_previous_start = {
+            ['[m'] = '@function.outer',
+            ['[['] = '@class.outer',
+          },
+          goto_previous_end = {
+            ['[M'] = '@function.outer',
+            ['[]'] = '@class.outer',
+          },
+        },
+        swap = {
+          enable = true,
+          swap_next = {
+            ['<leader>a'] = '@parameter.inner',
+          },
+          swap_previous = {
+            ['<leader>A'] = '@parameter.inner',
+          },
+        },
+      },
     },
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
@@ -917,19 +1119,19 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   --    For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
@@ -951,6 +1153,9 @@ require('lazy').setup({
     },
   },
 })
+
+-- Completion types colors
+vim.api.nvim_set_hl(0, 'CmpItemKindCopilot', { bg = '#113c80', fg = 'NONE' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

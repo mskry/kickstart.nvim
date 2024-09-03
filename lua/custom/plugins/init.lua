@@ -2,4 +2,18 @@
 --  I promise not to create any merge conflicts in this directory :)
 --
 -- See the kickstart.nvim README for more information
-return {}
+
+return {
+  -- Git related plugins
+  'tpope/vim-fugitive',
+  'tpope/vim-rhubarb',
+
+  -- cargo crates completion
+  {
+    'saecki/crates.nvim',
+    event = { 'BufRead Cargo.toml' },
+    config = function()
+      require('crates').setup()
+    end,
+  },
+}
