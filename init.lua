@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -627,6 +627,7 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
+        biome = {},
         tsserver = {
           javascript = {
             inlayHints = {
@@ -843,7 +844,7 @@ require('lazy').setup({
             local kind = require('lspkind').cmp_format {
               mode = 'symbol_text',
               maxwidth = 50,
-              symbol_map = { Copilot = '' },
+              symbol_map = { Supermaven = '' },
             }(entry, vim_item)
             local strings = vim.split(kind.kind, '%s', { trimempty = true })
             kind.kind = ' ' .. (strings[1] or '') .. ' '
@@ -914,7 +915,7 @@ require('lazy').setup({
           --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
         },
         sources = {
-          { name = 'copilot' },
+          { name = 'supermaven' },
           {
             name = 'lazydev',
             -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
@@ -1021,7 +1022,7 @@ require('lazy').setup({
     opts = {
       ensure_installed = {
         'bash',
-        'c',
+        -- 'c',
         'diff',
         'html',
         'lua',
@@ -1029,8 +1030,8 @@ require('lazy').setup({
         'markdown',
         'markdown_inline',
         'query',
-        'vim',
-        'vimdoc',
+        -- 'vim',
+        -- 'vimdoc',
         'rust',
         'javascript',
         'tsx',
@@ -1155,7 +1156,7 @@ require('lazy').setup({
 })
 
 -- Completion types colors
-vim.api.nvim_set_hl(0, 'CmpItemKindCopilot', { bg = '#113c80', fg = 'NONE' })
+vim.api.nvim_set_hl(0, 'CmpItemKindSupermaven', { bg = '#113c80', fg = 'NONE' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
