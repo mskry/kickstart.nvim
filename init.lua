@@ -627,6 +627,7 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
+        biome = {},
         tsserver = {
           javascript = {
             inlayHints = {
@@ -1021,7 +1022,7 @@ require('lazy').setup({
     opts = {
       ensure_installed = {
         'bash',
-        'c',
+        -- 'c',
         'diff',
         'html',
         'lua',
@@ -1029,8 +1030,8 @@ require('lazy').setup({
         'markdown',
         'markdown_inline',
         'query',
-        'vim',
-        'vimdoc',
+        -- 'vim',
+        -- 'vimdoc',
         'rust',
         'javascript',
         'tsx',
