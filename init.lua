@@ -407,6 +407,9 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+      vim.keymap.set('n', '<leader>se', function()
+        builtin.live_grep { additional_args = { '--fixed-strings' } }
+      end, { desc = '[S]earch by string' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
@@ -844,7 +847,7 @@ require('lazy').setup({
             local kind = require('lspkind').cmp_format {
               mode = 'symbol_text',
               maxwidth = 50,
-              symbol_map = { Supermaven = '' },
+              symbol_map = { Supermaven = '' },
             }(entry, vim_item)
             local strings = vim.split(kind.kind, '%s', { trimempty = true })
             kind.kind = ' ' .. (strings[1] or '') .. ' '
@@ -938,18 +941,18 @@ require('lazy').setup({
         local theme = colors.theme
         return {
           NormalFloat = { bg = 'none' },
-          FloatBorder = { bg = 'none' },
+          -- FloatBorder = { bg = theme.ui.bg_m3 },
           FloatTitle = { bg = 'none' },
           NormalDark = { fg = theme.ui.fg_dim, bg = theme.ui.bg_m3 },
           LazyNormal = { bg = theme.ui.bg_m3, fg = theme.ui.fg_dim },
           MasonNormal = { bg = theme.ui.bg_m3, fg = theme.ui.fg_dim },
           TelescopeTitle = { fg = theme.ui.special, bold = true },
           TelescopePromptNormal = { bg = theme.ui.bg_p1 },
-          TelescopePromptBorder = { fg = theme.ui.bg_p1, bg = theme.ui.bg_p1 },
-          TelescopeResultsNormal = { fg = theme.ui.fg_dim, bg = theme.ui.bg_m1 },
-          TelescopeResultsBorder = { fg = theme.ui.bg_m1, bg = theme.ui.bg_m1 },
+          -- TelescopePromptBorder = { bg = theme.ui.bg_m3 },
+          TelescopeResultsNormal = { fg = theme.ui.fg_dim, bg = theme.ui.bg_m3 },
+          -- TelescopeResultsBorder = { fg = theme.ui.bg_m3, bg = theme.ui.bg_m3 },
           TelescopePreviewNormal = { bg = theme.ui.bg_dim },
-          TelescopePreviewBorder = { bg = theme.ui.bg_dim, fg = theme.ui.bg_dim },
+          -- TelescopePreviewBorder = { bg = theme.ui.bg_dim, fg = theme.ui.bg_dim },
           Pmenu = { fg = theme.ui.shade0, bg = theme.ui.bg_p1 }, -- add `blend = vim.o.pumblend` to enable transparency
           PmenuSel = { fg = 'NONE', bg = theme.ui.bg_p2 },
           PmenuSbar = { bg = theme.ui.bg_m1 },
