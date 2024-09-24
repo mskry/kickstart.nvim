@@ -227,7 +227,7 @@ vim.opt.rtp:prepend(lazypath)
 --    :Lazy update
 --
 -- NOTE: Here is where you install your plugins.
-require('lazy').setup({
+pcall(require('lazy').setup, {
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
@@ -630,31 +630,6 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
-        biome = {},
-        tsserver = {
-          javascript = {
-            inlayHints = {
-              includeInlayEnumMemberValueHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayParameterNameHints = 'all',
-              includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayVariableTypeHints = true,
-            },
-          },
-          typescript = {
-            inlayHints = {
-              includeInlayEnumMemberValueHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayParameterNameHints = 'all',
-              includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayVariableTypeHints = true,
-            },
-          },
-        },
         rust_analyzer = {
           ['rust-analyzer'] = {
             lens = {
@@ -693,7 +668,16 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
+        ts_ls = {},
+        volar = {
+          filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' },
+          init_options = {
+            vue = {
+              hybridMode = false,
+            },
+          },
+        },
+
         --
 
         lua_ls = {
@@ -782,8 +766,8 @@ require('lazy').setup({
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         rust = { 'rustfmt', lsp_format = 'fallback' },
-        javascript = { 'prettierd', 'prettier', stop_after_first = true },
-        vue = { 'prettierd', 'prettier', stop_after_first = true },
+        javascript = { 'prettierd' },
+        vue = { 'prettierd' },
       },
     },
   },
@@ -842,6 +826,7 @@ require('lazy').setup({
           },
         },
         formatting = {
+          expandable_indicator = true,
           fields = { 'kind', 'abbr', 'menu' },
           format = function(entry, vim_item)
             local kind = require('lspkind').cmp_format {
@@ -1025,16 +1010,13 @@ require('lazy').setup({
     opts = {
       ensure_installed = {
         'bash',
-        -- 'c',
+        'fish',
         'diff',
         'html',
         'lua',
         'luadoc',
         'markdown',
         'markdown_inline',
-        'query',
-        -- 'vim',
-        -- 'vimdoc',
         'rust',
         'javascript',
         'tsx',
