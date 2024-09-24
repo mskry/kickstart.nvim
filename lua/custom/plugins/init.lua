@@ -7,8 +7,9 @@ return {
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
-
+  'mrcjkb/rustaceanvim',
   -- cargo crates completion
+  --
   {
     'saecki/crates.nvim',
     event = { 'BufRead Cargo.toml' },
