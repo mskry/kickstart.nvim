@@ -626,6 +626,7 @@ pcall(require('lazy').setup, {
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+      local nvim_lsp = require 'lspconfig'
       local servers = {
         -- clangd = {},
         -- gopls = {},
@@ -637,9 +638,15 @@ pcall(require('lazy').setup, {
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        ts_ls = {},
+        ts_ls = {
+          root_dir = nvim_lsp.util.root_pattern 'package.json',
+          single_file_support = false,
+        },
+        denols = {
+          root_dir = nvim_lsp.util.root_pattern('deno.json', 'deno.jsonc'),
+        },
         volar = {
-          filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' },
+          filetypes = { 'javascript', 'vue' },
           init_options = {
             vue = {
               hybridMode = false,
@@ -913,6 +920,8 @@ pcall(require('lazy').setup, {
           PmenuThumb = { bg = theme.ui.bg_p2 },
           -- match with Kanagawa's shell red
           Error = { fg = '#c34043' },
+          -- package.json outdated packages virtual text
+          PackageInfoOutdatedVersion = { fg = '#c34043' },
         }
       end,
       colors = {
